@@ -40,14 +40,14 @@ jobs:
           echo "Local SHA: $LOCAL_REV"
           echo "Upstream SHA: $UPSTREAM_REV"
 
-          if [ "$LOCAL_REV" != "$UPSTREAM_REV" ]; then
+          if git merge-base --is-ancestor "$UPSTREAM_REV" HEAD; then
+            echo "✅ Local already contains upstream. No new updates."
+            echo "has_update=false" >> "$GITHUB_OUTPUT"
+          else
             echo "🚀 Upstream has new updates! Syncing..."
             git merge upstream/main --ff-only || git merge upstream/main -m "chore: auto sync from upstream maillab/cloud-mail"
             git push origin main
             echo "has_update=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "✅ Local is already fully up to date with upstream."
-            echo "has_update=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: 🚀 Trigger Cloudflare Deployment
